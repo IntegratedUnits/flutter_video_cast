@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_video_cast/flutter_video_cast.dart';
 import 'package:flutter_video_cast/src/chrome_cast/chrome_cast_event.dart';
 import 'package:flutter_video_cast/src/chrome_cast/method_channel_chrome_cast.dart';
 
@@ -60,12 +61,17 @@ abstract class ChromeCastPlatform {
   }
 
   Future<void> loadMediaTvShow(
-      Map<String, dynamic> meta, {
-        required int id,
-      }) {
+    Map<String, dynamic> meta, {
+    required int id,
+  }) {
     throw UnimplementedError('loadMedia() has not been implemented.');
   }
 
+  //// load with request data object
+  Future<void> load(MediaLoadRequestData requestData, {required int id}) {
+    throw UnimplementedError(
+        'load(MediaLoadRequestData) has not been implemented.');
+  }
 
   /// Plays the video playback.
   Future<void> play({required int id}) {

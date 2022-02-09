@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_video_cast/flutter_video_cast.dart';
+
 import 'package:flutter_video_cast_example/timer.dart';
 
 void main() {
@@ -174,17 +175,48 @@ class _CastSampleState extends State<CastSample> {
   Future<void> _onSessionStarted() async {
     setState(() => _state = AppState.connected);
     String urlVideo =
-        "https://multiplatform-f.akamaihd.net/i/multi/will/bunny/big_buck_bunny_,640x360_400,640x360_700,640x360_1000,950x540_1500,.f4v.csmil/master.m3u8";
+        "https://vz-6de847a3-2cb.b-cdn.net/47ff704e-34ba-4c70-b51b-1fadc378f861/playlist.m3u8?height=1080&userid=&video_version=2.8&platform=ruman&default_source=2.8";
 
-    await _controller.loadMediaTvShow({
-      "url": urlVideo,
-      "seriesTitle": "Prova",
-      "season": 1,
-      "episode": 10,
-      "currentTime": 40000,
-      "image":
-          "https://upload.wikimedia.org/wikipedia/commons/2/22/Big.Buck.Bunny.-.Bunny.Portrait.png"
-    });
+    // await _controller.loadMediaTvShow({
+    //   "url": urlVideo.split("?")[0],
+    //   "seriesTitle": "Prova",
+    //   "season": 1,
+    //   "episode": 10,
+    //   "currentTime": 40000,
+    //   "image":
+    //       "https://upload.wikimedia.org/wikipedia/commons/2/22/Big.Buck.Bunny.-.Bunny.Portrait.png"
+    // });
+    await _controller.load(
+      MediaLoadRequestData(
+        media: MediaInfo(
+          contentId: urlVideo,
+          metaData: MovieMediaMetaData(title: "Title"),
+        ),
+        queueData: QueueData(items: [
+          MediaQueueItem(
+            media: MediaInfo(
+              contentId: urlVideo.split("?")[0],
+              metaData: TvShowMediaMetaData(
+                  seriesTitle: "Title 1",
+                  episode: 1,
+                  images: [
+                    'https://upload.wikimedia.org/wikipedia/commons/2/22/Big.Buck.Bunny.-.Bunny.Portrait.png'
+                  ]),
+            ),
+          ),
+          MediaQueueItem(
+              media: MediaInfo(
+            contentId: urlVideo.split("?")[0],
+            metaData: TvShowMediaMetaData(
+                seriesTitle: "Title 1",
+                episode: 2,
+                images: [
+                  'https://upload.wikimedia.org/wikipedia/commons/2/22/Big.Buck.Bunny.-.Bunny.Portrait.png'
+                ]),
+          ))
+        ], queueId: 0, startIndex: 0),
+      ),
+    );
   }
 
   Future<void> _onSessionEnded() async {

@@ -31,7 +31,12 @@ class ChromeCastController {
     return _chromeCastPlatform.loadMedia(url, meta, id: id);
   }
 
-  Future<void> loadMediaTvShow(Map<String, dynamic> meta){
+  /// load video with reuqest data object
+  Future<void> load(MediaLoadRequestData requestData) {
+    return _chromeCastPlatform.load(requestData, id: id);
+  }
+
+  Future<void> loadMediaTvShow(Map<String, dynamic> meta) {
     return _chromeCastPlatform.loadMediaTvShow(meta, id: id);
   }
 
@@ -89,6 +94,7 @@ class ChromeCastController {
 
   /// Returns current position.
   Future<Duration> position() {
+    // return Future<Duration>.value(Duration(seconds: 10));
     return _chromeCastPlatform.position(id: id);
   }
 

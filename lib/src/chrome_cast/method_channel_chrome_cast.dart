@@ -1,8 +1,11 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_video_cast/flutter_video_cast.dart';
 import 'package:flutter_video_cast/src/chrome_cast/chrome_cast_event.dart';
 import 'package:flutter_video_cast/src/chrome_cast/chrome_cast_platform.dart';
 import 'package:stream_transform/stream_transform.dart';
@@ -80,11 +83,15 @@ class MethodChannelChromeCast extends ChromeCastPlatform {
     return channel(id)!.invokeMethod<void>('chromeCast#loadMedia', args);
   }
 
-  @override
-  Future<void> loadMediaTvShow(Map<String, dynamic> meta, {required int id}){
-    return channel(id)!.invokeMethod<void>('chromeCast#loadMediaTvShow', meta);
+  Future<void> load(MediaLoadRequestData requestData, {required int id}) {
+    return channel(id)!.invokeListMethod(
+        "chromeCast#loadMediaWithRequestObject", requestData.toJsonMap());
   }
 
+  @override
+  Future<void> loadMediaTvShow(Map<String, dynamic> meta, {required int id}) {
+    return channel(id)!.invokeMethod<void>('chromeCast#loadMediaTvShow', meta);
+  }
 
   @override
   Future<void> play({required int id}) {
@@ -144,10 +151,18 @@ class MethodChannelChromeCast extends ChromeCastPlatform {
 
   @override
   Future<Duration> position({required int id}) async {
+    // log("add");
+    // String s =
+    //     (await channel(id)!.invokeMethod<String>('chromeCast#getStatus') ?? "")
+    //         .toString();
+    // log("result :-----" + jsonDecode(s).toString());
     return Duration(
       milliseconds:
           (await channel(id)!.invokeMethod<int>('chromeCast#position')) ?? 0,
     );
+    // return Duration(
+    //   milliseconds: 3000,
+    // );
   }
 
   @override

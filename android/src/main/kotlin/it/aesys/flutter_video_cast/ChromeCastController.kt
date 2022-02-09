@@ -6,14 +6,12 @@ import android.util.Log
 import android.view.ContextThemeWrapper
 import android.widget.ArrayAdapter
 import androidx.mediarouter.app.MediaRouteButton
-import com.google.android.gms.cast.MediaInfo
-import com.google.android.gms.cast.MediaLoadOptions
-import com.google.android.gms.cast.MediaMetadata
-import com.google.android.gms.cast.MediaTrack
+import com.google.android.gms.cast.*
 import com.google.android.gms.cast.framework.CastButtonFactory
 import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.cast.framework.Session
 import com.google.android.gms.cast.framework.SessionManagerListener
+import com.google.android.gms.cast.framework.media.MediaQueue
 import com.google.android.gms.common.api.PendingResult
 import com.google.android.gms.common.api.Status
 import com.google.android.gms.common.images.WebImage
@@ -21,6 +19,7 @@ import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.platform.PlatformView
+import org.json.JSONObject
 
 
 class ChromeCastController(
@@ -59,6 +58,7 @@ class ChromeCastController(
             val request =
                 sessionManager?.currentCastSession?.remoteMediaClient?.load(media, options)
 
+
             request?.addStatusListener(this)
         }
     }
@@ -84,10 +84,40 @@ class ChromeCastController(
                     .setMetadata(movieMetadata)
                     .build()
             val options = MediaLoadOptions.Builder().setPlayPosition(currentTime?.toLong()).build()
-            val request =
-                sessionManager?.currentCastSession?.remoteMediaClient?.load(media, options)
+            val movieMetadata2 = MediaMetadata(MediaMetadata.MEDIA_TYPE_TV_SHOW)
+            movieMetadata2.putString(MediaMetadata.KEY_SERIES_TITLE, "series 2")
+            movieMetadata2.putInt(MediaMetadata.KEY_SEASON_NUMBER, 2)
+            movieMetadata2.putInt(MediaMetadata.KEY_EPISODE_NUMBER, 2)
+            movieMetadata2.addImage(WebImage(Uri.parse("https://vz-6de847a3-2cb.b-cdn.net/u/ruman/files/thumbs/2022/01/18/16425072957123t4eqcqsxxj2-original-3.jpg")))
+
+
+            val media2 =
+                    MediaInfo.Builder("https://vz-6de847a3-2cb.b-cdn.net/b82019af-1a6d-4956-909e-acc11ff79f64/playlist.m3u8").setStreamType(MediaInfo.STREAM_TYPE_BUFFERED)
+                            .setMetadata(movieMetadata2)
+                            .build()
+//            val options2 = MediaLoadOptions.Builder().setPlayPosition(currentTime?.toLong()).build()
+            val queueItem = MediaQueueItem.Builder(media).build();
+            val queueItem2 = MediaQueueItem.Builder(media2).setPreloadTime(5.0).build()
+
+            val request = sessionManager?.currentCastSession?.remoteMediaClient?.load(
+                    MediaLoadRequestData.Builder().setQueueData(
+                            MediaQueueData.Builder().setItems(listOf<MediaQueueItem>(queueItem,queueItem2)).build()
+                    )
+                    .build())
+//            val request =
+//                sessionManager?.currentCastSession?.remoteMediaClient?.load(media, options)
 
             request?.addStatusListener(this)
+        }
+    }
+    private  fun  load(args: Any?){
+        if(args is Map<*,*>){
+
+//                val url = (args["data"] as Map<*,*>)["contentId"] as? String
+//                val mediaInfo = MediaInfo.Builder(url).build()
+                val  request = sessionManager?.currentCastSession?.remoteMediaClient?.load(MediaLoadRequestData.fromJson(JSONObject(args)))
+                request?.addStatusListener(this)
+
         }
     }
     
@@ -154,8 +184,26 @@ class ChromeCastController(
 
     private fun endSession() = sessionManager?.endCurrentSession(true)
 
-    private fun position() =
-        sessionManager?.currentCastSession?.remoteMediaClient?.approximateStreamPosition ?: 0
+    private fun position() : Long{
+//        print("possition : 0111");
+//        return 2000
+       return sessionManager?.currentCastSession?.remoteMediaClient?.approximateStreamPosition ?: 0
+    }
+    private  fun getStatus() : String{
+        val movieMetadata2 = MediaMetadata(MediaMetadata.MEDIA_TYPE_TV_SHOW)
+        movieMetadata2.putString(MediaMetadata.KEY_SERIES_TITLE, "series 2")
+        movieMetadata2.putInt(MediaMetadata.KEY_SEASON_NUMBER, 2)
+        movieMetadata2.putInt(MediaMetadata.KEY_EPISODE_NUMBER, 2)
+        movieMetadata2.addImage(WebImage(Uri.parse("https://vz-6de847a3-2cb.b-cdn.net/u/ruman/files/thumbs/2022/01/18/16425072957123t4eqcqsxxj2-original-3.jpg")))
+        return movieMetadata2.toJson().toString()
+
+       return sessionManager?.currentCastSession?.remoteMediaClient?.mediaInfo?.toJson()?.toString() ?: "data" ;
+    }
+//    private fun position() =
+//        sessionManager?.currentCastSession?.remoteMediaClient?.approximateStreamPosition ?: 0
+
+//    private fun position() =
+//           2000
 
     private fun duration() =
         sessionManager?.currentCastSession?.remoteMediaClient?.mediaInfo?.streamDuration ?: 0
@@ -183,6 +231,10 @@ class ChromeCastController(
                 loadMedia(call.arguments)
                 result.success(null)
             }
+            "chromeCast#loadMediaWithRequestObject" -> {
+                load(call.arguments)
+                result.success(null)
+            }
             "chromeCast#loadMediaTvShow" -> {
                 loadMediaTvShow(call.arguments)
                 result.success(null)
@@ -191,6 +243,7 @@ class ChromeCastController(
                 play()
                 result.success(null)
             }
+
             "chromeCast#activeTracks" -> {
                 activeTracks()
                 result.success(null)
@@ -220,6 +273,7 @@ class ChromeCastController(
             }
             "chromeCast#position" -> result.success(position())
             "chromeCast#duration" -> result.success(duration())
+            "chromeCast#mediastatus" -> result.success(getStatus())
             "chromeCast#addSessionListener" -> {
                 addSessionListener()
                 result.success(null)
@@ -228,6 +282,7 @@ class ChromeCastController(
                 removeSessionListener()
                 result.success(null)
             }
+            "chromeCast#getStatus" -> result.success(getStatus())
         }
     }
 
