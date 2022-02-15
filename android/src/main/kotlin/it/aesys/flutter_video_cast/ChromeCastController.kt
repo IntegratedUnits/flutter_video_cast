@@ -9,6 +9,7 @@ import androidx.mediarouter.app.MediaRouteButton
 import com.google.android.gms.cast.*
 import com.google.android.gms.cast.framework.CastButtonFactory
 import com.google.android.gms.cast.framework.CastContext
+import com.google.android.gms.cast.framework.CastStateListener
 import com.google.android.gms.cast.framework.Session
 import com.google.android.gms.cast.framework.SessionManagerListener
 import com.google.android.gms.cast.framework.media.MediaQueue
@@ -35,7 +36,9 @@ class ChromeCastController(
     lateinit var subtitle: String
 
     init {
-        CastButtonFactory.setUpMediaRouteButton(context, chromeCastButton)
+//        CastButtonFactory.setUpMediaRouteButton(context, chromeCastButton)
+        CastButtonFactory.setUpMediaRouteButton(context, MediaRouteButton(context))
+
         channel.setMethodCallHandler(this)
     }
 
@@ -189,15 +192,22 @@ class ChromeCastController(
 //        return 2000
        return sessionManager?.currentCastSession?.remoteMediaClient?.approximateStreamPosition ?: 0
     }
-    private  fun getStatus() : String{
-        val movieMetadata2 = MediaMetadata(MediaMetadata.MEDIA_TYPE_TV_SHOW)
-        movieMetadata2.putString(MediaMetadata.KEY_SERIES_TITLE, "series 2")
-        movieMetadata2.putInt(MediaMetadata.KEY_SEASON_NUMBER, 2)
-        movieMetadata2.putInt(MediaMetadata.KEY_EPISODE_NUMBER, 2)
-        movieMetadata2.addImage(WebImage(Uri.parse("https://vz-6de847a3-2cb.b-cdn.net/u/ruman/files/thumbs/2022/01/18/16425072957123t4eqcqsxxj2-original-3.jpg")))
-        return movieMetadata2.toJson().toString()
+    private fun queueNext() =
+        sessionManager?.currentCastSession?.remoteMediaClient?.queueNext(null)
 
-       return sessionManager?.currentCastSession?.remoteMediaClient?.mediaInfo?.toJson()?.toString() ?: "data" ;
+    private fun queuePrevious() =
+        sessionManager?.currentCastSession?.remoteMediaClient?.queuePrev(null)
+
+    private  fun getStatus() : String{
+//        val movieMetadata2 = MediaMetadata(MediaMetadata.MEDIA_TYPE_TV_SHOW)
+//        movieMetadata2.putString(MediaMetadata.KEY_SERIES_TITLE, "series 2")
+//        movieMetadata2.putInt(MediaMetadata.KEY_SEASON_NUMBER, 2)
+//        movieMetadata2.putInt(MediaMetadata.KEY_EPISODE_NUMBER, 2)
+//        movieMetadata2.addImage(WebImage(Uri.parse("https://vz-6de847a3-2cb.b-cdn.net/u/ruman/files/thumbs/2022/01/18/16425072957123t4eqcqsxxj2-original-3.jpg")))
+//        return movieMetadata2.toJson().toString()
+        position()
+
+       return sessionManager?.currentCastSession?.remoteMediaClient?.mediaStatus?.toJson().toString() ?: "" ;
     }
 //    private fun position() =
 //        sessionManager?.currentCastSession?.remoteMediaClient?.approximateStreamPosition ?: 0
@@ -283,6 +293,15 @@ class ChromeCastController(
                 result.success(null)
             }
             "chromeCast#getStatus" -> result.success(getStatus())
+            "chromeCast#queueNext" -> {
+                queueNext()
+                result.success(null)
+            }
+            "chromeCast#queuePrevious" -> {
+                queuePrevious()
+                result.success(null)
+            }
+
         }
     }
 

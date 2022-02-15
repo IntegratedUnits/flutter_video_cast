@@ -7,11 +7,15 @@ class MediaInfo {
   String contentId;
   String? contentType;
   String? streamType;
+  double? duration;
   MediaMetaData? metaData;
+  Map<String, dynamic>? customData;
   MediaInfo(
       {required this.contentId,
       this.contentType,
       this.streamType,
+      this.duration,
+      this.customData,
       this.metaData});
 
   Map<String, dynamic> toMap() {
@@ -21,6 +25,25 @@ class MediaInfo {
       if (streamType != null) 'streamType': streamType,
       if (metaData != null) 'metadata': metaData!.toMap(),
     };
+  }
+
+  factory MediaInfo.fromJson(Map<String, dynamic> json) {
+    late MediaMetaData mediaMetaData;
+    if (json['metadata'] != null) {
+      switch (json['metadata']['metadataType'] as int) {
+        case 1:
+          mediaMetaData = MovieMediaMetaData.fromMap(json['metadata']);
+          break;
+        case 2:
+          mediaMetaData = TvShowMediaMetaData.fromMap(json['metadata']);
+          break;
+      }
+    }
+    return MediaInfo(
+        contentId: json['contentId'],
+        streamType: json['streamType'],
+        duration: json['duration'].toDouble(),
+        metaData: mediaMetaData);
   }
 
   // factory MediaInfo.fromMap(Map<String, dynamic> map) {

@@ -4,6 +4,8 @@ abstract class MediaMetaData {
   // int type;
   // int metaDataType;
   Map<String, dynamic> toMap();
+  String get contentTitle;
+  List<String>? get images;
 }
 
 class MovieMediaMetaData extends MediaMetaData {
@@ -25,12 +27,18 @@ class MovieMediaMetaData extends MediaMetaData {
     };
   }
 
+  String get contentTitle {
+    return this.title ?? "";
+  }
+
   factory MovieMediaMetaData.fromMap(Map<String, dynamic> map) {
+    List<String> images = [];
+    images = (map["images"] as List).map((e) => e['url'].toString()).toList();
     return MovieMediaMetaData(
       title: map['title'],
       subtitle: map['subtitle'],
       studio: map['studio'],
-      images: List<String>.from(map['images']),
+      images: images,
     );
   }
 
@@ -67,13 +75,19 @@ class TvShowMediaMetaData extends MediaMetaData {
     };
   }
 
+  String get contentTitle {
+    return this.seriesTitle ?? "";
+  }
+
   factory TvShowMediaMetaData.fromMap(Map<String, dynamic> map) {
+    List<String> images = [];
+    images = (map["images"] as List).map((e) => e['url'].toString()).toList();
     return TvShowMediaMetaData(
       seriesTitle: map['seriesTitle'],
       subtitle: map['subtitle'],
       season: map['season']?.toInt(),
       episode: map['episode']?.toInt(),
-      images: List<String>.from(map['images']),
+      images: images,
     );
   }
 

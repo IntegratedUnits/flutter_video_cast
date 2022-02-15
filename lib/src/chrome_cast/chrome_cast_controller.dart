@@ -102,4 +102,24 @@ class ChromeCastController {
   Future<Duration> duration() {
     return _chromeCastPlatform.duration(id: id);
   }
+
+  // play next video in queue
+  Future<void> queueNext() {
+    return _chromeCastPlatform.queueNext(id: id);
+  }
+
+  // play previous video in queue
+  Future<void> queuePrevious() {
+    return _chromeCastPlatform.queuePrevious(id: id);
+  }
+
+  Future<MediaStatus?> getMediaStatus() async {
+    final s = await _chromeCastPlatform.getMediaInfo(id: id);
+    // log(s);
+    if (s == "" || s == null) {
+      return null;
+    }
+    final posittion = await position();
+    return MediaStatus.fromJson(jsonDecode(s))..possition = posittion;
+  }
 }

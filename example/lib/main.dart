@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_video_cast/flutter_video_cast.dart';
@@ -35,6 +36,10 @@ class _CastSampleState extends State<CastSample> {
 
   Timer _timer = Timer();
   StreamSubscription<int>? _tickerSubscription;
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -87,6 +92,10 @@ class _CastSampleState extends State<CastSample> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             _RoundIconButton(
+              icon: Icons.skip_previous,
+              onPressed: () => _controller.queuePrevious(),
+            ),
+            _RoundIconButton(
               icon: Icons.replay_10,
               onPressed: () =>
                   _controller.seek(relative: true, interval: -10.0),
@@ -97,6 +106,10 @@ class _CastSampleState extends State<CastSample> {
             _RoundIconButton(
               icon: Icons.forward_10,
               onPressed: () => _controller.seek(relative: true, interval: 10.0),
+            ),
+            _RoundIconButton(
+              icon: Icons.skip_next,
+              onPressed: () => _controller.queueNext(),
             ),
           ],
         ),
@@ -161,6 +174,8 @@ class _CastSampleState extends State<CastSample> {
       _tickerSubscription?.cancel();
       _tickerSubscription = _timer.tick(ticks: 0).listen((time) async {
         position = await _controller.position();
+        final response = await _controller.getMediaStatus();
+        log((response?.mediaInfo?.toMap()).toString() + "////./// mediaInfo");
         setState(() {});
       });
     }
@@ -170,6 +185,9 @@ class _CastSampleState extends State<CastSample> {
   Future<void> _onButtonCreated(ChromeCastController controller) async {
     _controller = controller;
     await _controller.addSessionListener();
+    final v = await _controller.duration();
+    print("a");
+    log(v.toString());
   }
 
   Future<void> _onSessionStarted() async {
@@ -206,7 +224,9 @@ class _CastSampleState extends State<CastSample> {
           ),
           MediaQueueItem(
               media: MediaInfo(
-            contentId: urlVideo.split("?")[0],
+            contentId:
+                "https://vz-6de847a3-2cb.b-cdn.net/b82019af-1a6d-4956-909e-acc11ff79f64/playlist.m3u8?height=1080&userid=&video_version=2.8&platform=ruman&default_source=2.8"
+                    .split("?")[0],
             metaData: TvShowMediaMetaData(
                 seriesTitle: "Title 1",
                 episode: 2,
@@ -214,7 +234,7 @@ class _CastSampleState extends State<CastSample> {
                   'https://upload.wikimedia.org/wikipedia/commons/2/22/Big.Buck.Bunny.-.Bunny.Portrait.png'
                 ]),
           ))
-        ], queueId: 0, startIndex: 0),
+        ], queueId: 0, startIndex: 1),
       ),
     );
   }

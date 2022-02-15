@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_video_cast/flutter_video_cast.dart';
@@ -131,6 +133,20 @@ abstract class ChromeCastPlatform {
 
   Future<Duration> duration({required int id}) {
     throw UnimplementedError('duration() has not been implemented.');
+  }
+
+  /// get Media status
+  Future<String> getMediaInfo({required int id}) {
+    throw UnimplementedError('getMediaInfo() has not been implemented.');
+  }
+
+  /// play next video in queue
+  Future<void> queueNext({required int id}) {
+    throw UnimplementedError('queueNext() has not been implemented.');
+  }
+
+  Future<void> queuePrevious({required int id}) {
+    throw UnimplementedError('queuePrevious() has not been implemented.');
   }
 
   /// Returns a widget displaying the button.

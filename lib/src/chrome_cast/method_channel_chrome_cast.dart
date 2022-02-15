@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:ffi';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -151,11 +152,11 @@ class MethodChannelChromeCast extends ChromeCastPlatform {
 
   @override
   Future<Duration> position({required int id}) async {
-    // log("add");
-    // String s =
-    //     (await channel(id)!.invokeMethod<String>('chromeCast#getStatus') ?? "")
-    //         .toString();
-    // log("result :-----" + jsonDecode(s).toString());
+    log("add");
+    String s =
+        (await channel(id)!.invokeMethod<String>('chromeCast#getStatus') ?? "")
+            .toString();
+    log("result :-----" + s.toString());
     return Duration(
       milliseconds:
           (await channel(id)!.invokeMethod<int>('chromeCast#position')) ?? 0,
@@ -171,6 +172,26 @@ class MethodChannelChromeCast extends ChromeCastPlatform {
       milliseconds:
           (await channel(id)!.invokeMethod<int>('chromeCast#duration')) ?? 0,
     );
+  }
+
+  @override
+  Future<String> getMediaInfo({required int id}) async {
+    return (await channel(id)!.invokeMethod<String>('chromeCast#getStatus')) ??
+        "";
+  }
+
+  @override
+  Future<void> queueNext({required int id}) {
+    return channel(id)!.invokeMethod<void>("chromeCast#queueNext");
+  }
+
+  @override
+  Future<void> queuePrevious({required int id}) async {
+    log("add");
+    String s = (await channel(id)!.invokeMethod<String>('chromeCast#getStatus'))
+        .toString();
+    log("result :-----" + jsonDecode(s).toString());
+    return channel(id)!.invokeMethod<void>("chromeCast#queuePrevious");
   }
 
   Future<dynamic> _handleMethodCall(MethodCall call, int id) async {
