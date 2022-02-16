@@ -36,8 +36,8 @@ class ChromeCastController(
     lateinit var subtitle: String
 
     init {
-//        CastButtonFactory.setUpMediaRouteButton(context, chromeCastButton)
-        CastButtonFactory.setUpMediaRouteButton(context, MediaRouteButton(context))
+        CastButtonFactory.setUpMediaRouteButton(context, chromeCastButton)
+//        CastButtonFactory.setUpMediaRouteButton(context, MediaRouteButton(context))
 
         channel.setMethodCallHandler(this)
     }
