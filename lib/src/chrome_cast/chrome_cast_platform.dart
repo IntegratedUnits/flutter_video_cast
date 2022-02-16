@@ -139,6 +139,9 @@ abstract class ChromeCastPlatform {
   Future<String> getMediaInfo({required int id}) {
     throw UnimplementedError('getMediaInfo() has not been implemented.');
   }
+  Future<Map> getMediaInfoIOS({required int id}){
+    throw UnimplementedError('getMediaInfoIOS() has not been implemented.');
+  } 
 
   /// play next video in queue
   Future<void> queueNext({required int id}) {
