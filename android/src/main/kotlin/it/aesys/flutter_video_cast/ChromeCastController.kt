@@ -21,6 +21,8 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.platform.PlatformView
 import org.json.JSONObject
+import java.util.*
+import kotlin.collections.HashMap
 
 
 class ChromeCastController(
@@ -206,6 +208,7 @@ class ChromeCastController(
 //        movieMetadata2.addImage(WebImage(Uri.parse("https://vz-6de847a3-2cb.b-cdn.net/u/ruman/files/thumbs/2022/01/18/16425072957123t4eqcqsxxj2-original-3.jpg")))
 //        return movieMetadata2.toJson().toString()
         position()
+//        HashMap<String,dynamic> a = HasMap<String,dynamic>();
 
        return sessionManager?.currentCastSession?.remoteMediaClient?.mediaStatus?.toJson().toString() ?: "" ;
     }

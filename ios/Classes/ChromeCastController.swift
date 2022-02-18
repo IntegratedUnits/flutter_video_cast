@@ -7,6 +7,7 @@
 
 import Flutter
 import GoogleCast
+import Foundation
 
 class ChromeCastController: NSObject, FlutterPlatformView {
 
@@ -109,6 +110,11 @@ class ChromeCastController: NSObject, FlutterPlatformView {
         case "chromeCast#loadMediaTvShow":
             loadMediaTvShow(args: call.arguments)
             result(nil)
+        case "chromeCast#loadMediaWithRequestObject":
+            load(args: call.arguments)
+            result(nil)
+        case "chromeCast#getStatus":
+            result(getStatus())
         default:
             result(nil)
             break
@@ -127,6 +133,157 @@ class ChromeCastController: NSObject, FlutterPlatformView {
         if let request = sessionManager.currentCastSession?.remoteMediaClient?.loadMedia(mediaInformation) {
             request.delegate = self
         }
+    }
+    private func load(args: Any?) {
+        let args = args as? [String:Any]
+//        let reuqestData = GCKMediaLoadRequestDataBuilder()
+//        if(args?["media"] != nil){
+//            let data = args?["media"] as? [String: Any]
+//            let mediaInfo = GCKMediaInformationBuilder()
+//            mediaInfo.contentID = data?["contentId"] as? String
+//            reuqestData.mediaInformation = mediaInfo.build()
+//
+//        }
+        
+        if let request = sessionManager.currentCastSession?.remoteMediaClient?.loadMedia(with: getMediaLoadRequestDataFromDic(d:args)){
+            request.delegate = self
+        }
+        
+    }
+    func getMediaLoadRequestDataFromDic(d: Dictionary<String,Any>?) -> GCKMediaLoadRequestData{
+        let r = GCKMediaLoadRequestDataBuilder.init()
+        if(d?["media"] != nil){
+            let data = d?["media"] as? [String: Any]
+//            do{
+//                let a =  try JSONSerialization.data(withJSONObject: data, options: .prettyPrinted)
+//                 print(a)
+//            }
+//            catch{}
+    
+            
+//            let mediaInfo = GCKMediaInformationBuilder()
+//            mediaInfo.contentID = data?["contentId"] as? String
+////            mediaInfo.streamType = data?[""]
+////            mediaInfo.setValuesForKeys(data!)
+//            let metaData = data?["metadata"] as? [String:Any]
+//            let metaData1 = GCKMediaMetadata.init(metadataType: GCKMediaMetadataType.init(rawValue: metaData?["metadataType"] as? Int ?? 0)!)
+//            if(metaData1.metadataType == GCKMediaMetadataType.movie){
+//
+//                metaData1.setString((metaData?["title"]) as? String ?? "", forKey: kGCKMetadataKeyTitle)
+//                metaData1.setString(metaData?["subtitle"] as? String ?? "", forKey: kGCKMetadataKeySubtitle)
+//                let images = (metaData?["images"] as? [Dictionary<String,Any>])
+////                metaData1.setString(images?.first?["url"] as? String ?? "", forKey: kGCKMetadataKeySubtitle)
+//                for val in images!{
+//                    metaData1.addImage(GCKImage(url:URL(string:val["url"] as? String ?? "")!,width: 480,height: 360))
+//                }
+//
+////                metaData1.setString(<#T##value: String##String#>, forK)
+//            }
+//            mediaInfo.metadata = metaData1
+        
+//            mediaInfo.streamType = getStreamTypeFromString(s: data?["streamType"])
+            r.mediaInformation = getMediaInfoFromDix(d:data)
+        }
+        if(d?["queueData"] != nil){
+            let queueData = d?["queueData"] as? [String:Any];
+            let queueDataBuilder = GCKMediaQueueDataBuilder.init(queueType: GCKMediaQueueType.tvSeries)
+            
+            queueDataBuilder.queueID = queueData?["queueId"] as? String
+            if(queueData?["startIndex"] != nil){
+                queueDataBuilder.startIndex = (queueData!["startIndex"] as? NSNumber)?.uintValue ?? UInt.zero
+//                queueDataBuilder.startIndex =
+            }
+            if(queueData?["items"] != nil){
+                let items = queueData!["items"]! as? Array<Dictionary<String,Any>>
+                for val in items!{
+                    let itemBuilder = GCKMediaQueueItemBuilder.init();
+                    itemBuilder.preloadTime = val["preloadTime"] as? TimeInterval ?? 10
+            
+                    itemBuilder.autoplay = true
+                    itemBuilder.mediaInformation = getMediaInfoFromDix(d: val["media"]! as? [String:Any])
+                    queueDataBuilder.items?.append(itemBuilder.build())
+                }
+               
+            }
+            r.queueData = queueDataBuilder.build()
+            
+        }
+        return r.build()
+        
+    }
+    func getMediaInfoFromDix(d:[String:Any]?) -> GCKMediaInformation{
+        let mediaInfo = GCKMediaInformationBuilder()
+        mediaInfo.contentID = d?["contentId"] as? String
+//            mediaInfo.streamType = data?[""]
+//            mediaInfo.setValuesForKeys(data!)
+        let metaData = d?["metadata"] as? [String:Any]
+//        let metaData1 = GCKMediaMetadata.init(metadataType: GCKMediaMetadataType.init(rawValue: metaData?["metadataType"] as? Int ?? 0)!)
+//        if(metaData1.metadataType == GCKMediaMetadataType.movie){
+//
+//            metaData1.setString((metaData?["title"]) as? String ?? "", forKey: kGCKMetadataKeyTitle)
+//            metaData1.setString(metaData?["subtitle"] as? String ?? "", forKey: kGCKMetadataKeySubtitle)
+//            let images = (metaData?["images"] as? [Dictionary<String,Any>])
+////                metaData1.setString(images?.first?["url"] as? String ?? "", forKey: kGCKMetadataKeySubtitle)
+//            for val in images!{
+//                metaData1.addImage(GCKImage(url:URL(string:val["url"] as? String ?? "")!,width: 480,height: 360))
+//            }
+//
+////                metaData1.setString(<#T##value: String##String#>, forK)
+//        }
+//        mediaInfo.metadata = metaData1
+        return mediaInfo.build()
+        }
+    func getMediaMetaDataFromDic(d:[String:Any]?) -> GCKMediaMetadata?{
+        return nil;
+    }
+    func getStreamTypeFromString(s:String?) -> GCKMediaStreamType{
+        switch(s){
+        case "NONE":
+            return GCKMediaStreamType.none
+        case "BUFFERED" :
+            return GCKMediaStreamType.buffered
+        case "LIVE" :
+            return GCKMediaStreamType.live
+        default:
+            return GCKMediaStreamType.unknown
+            
+        }
+    }
+    //    private func getStatus() -> Dictionary<String,Any>?{
+////        return "testData"
+//
+////        sessionManager.currentCastSession?.remoteMediaClient?.mediaStatus
+////        data["possition"]
+//
+//
+//
+//
+//        return getDictionaryFromMediaInfo(arg: sessionManager.currentCastSession?.remoteMediaClient?.mediaStatus)
+//    }
+    private func getStatus() ->String? {
+//        return "testData"
+       
+//        sessionManager.currentCastSession?.remoteMediaClient?.mediaStatus
+//        data["possition"]
+        
+          
+        
+        
+        return getDictionaryFromMediaInfo(arg: sessionManager.currentCastSession?.remoteMediaClient?.mediaStatus)?.description.replacingOccurrences(of: "[", with: "{").replacingOccurrences(of: "]", with:  "}")
+    }
+    private func getDictionaryFromMediaInfo(arg: GCKMediaStatus?) -> Dictionary<String,Any>?{
+        if(arg == nil){
+            return nil
+        }
+        var data = [String:Any]()
+        
+            
+        data["currentTime"] = arg?.streamPosition
+            
+           
+        
+        
+        return arg?.toDictionary()
     }
 
     private func loadMediaTvShow(args: Any?){
@@ -213,7 +370,8 @@ class ChromeCastController: NSObject, FlutterPlatformView {
         sessionManager.remove(self)
     }
 
-    private func position() -> Int {        
+    private func position() -> Int {
+//        return 200;
         return Int(sessionManager.currentCastSession?.remoteMediaClient?.approximateStreamPosition() ?? 0) * 1000
     }
 
@@ -240,5 +398,171 @@ extension ChromeCastController: GCKRequestDelegate {
 
     func request(_ request: GCKRequest, didFailWithError error: GCKError) {
         channel.invokeMethod("chromeCast#requestDidFail", arguments: ["error" : error.localizedDescription])
+    }
+}
+
+extension GCKMediaStatus{
+    func toDictionary() -> Dictionary<String,Any>{
+        var dd = [String:Any]()
+        dd["currentTime"] = self.streamPosition
+        if(self.playerState != GCKMediaPlayerState.unknown){
+            dd["playerState"] = self.playerState.toS()
+        }
+        
+        if(self.mediaInformation != nil){
+            dd["media"] = self.mediaInformation?.toMap()
+//            do{
+//                dd["assss"] = try JSONSerialization.data(withJSONObject:self.mediaInformation!.toMap(), options:.prettyPrinted).description
+//            }catch{}
+        }
+//        var dd1 = [String:Any]()
+//        dd1["subString"] = 100
+//        dd["queueData"] = self.queueData
+       
+        if(self.idleReason != GCKMediaPlayerIdleReason.none){
+        dd["idleReason"] = self.idleReason.toS()
+        }
+//        dd["sub"] = dd1
+        
+        return dd
+    }
+}
+
+extension GCKMediaInformation{
+    func toMap() -> Dictionary<String,Any>{
+        var d = [String:Any]();
+        d["contentId"] = self.contentID
+        d["contentType"] = self.contentType
+        d["streamType"] = self.streamType.toS()
+        d["duration"] = self.streamDuration
+        d["metadata"] = self.metadata?.toMap()
+        return d;
+    }
+}
+extension GCKMediaMetadata{
+    func toMap() -> Dictionary<String,Any>{
+        var d = [String:Any]()
+//        GCKMediaMetadataType
+        d["metadataType"] = self.metadataType.rawValue
+        switch(self.metadataType.rawValue){
+        case 1 :
+            d["title"] = self.string(forKey: kGCKMetadataKeyTitle)
+            d["subtitle"] = self.string(forKey: kGCKMetadataKeySubtitle)
+            d["studio"] = self.string(forKey: kGCKMetadataKeyStudio)
+            let images = self.images()
+            var imageArray: Array<Dictionary<String,Any>> = Array<Dictionary<String,Any>>()
+            for val in images{
+                if(val is GCKImage){
+                    let v = val as? GCKImage
+            
+                    imageArray.append(["url":v?.url.absoluteURL])
+                  
+                }
+            }
+            
+            break
+        default:
+            break
+        }
+        return d;
+    }
+}
+extension GCKMediaStreamType{
+    func toS() -> String{
+        var streamtypeString = ""
+        switch(self.rawValue){
+        case 0:
+            streamtypeString = "NONE"
+            break
+        case 1 :
+            streamtypeString = "BUFFERED"
+            break;
+        case 2:
+            streamtypeString = "LIVE"
+            break;
+        default:
+            break;
+        }
+        return streamtypeString;
+    }
+}
+
+
+extension GCKMediaPlayerIdleReason{
+    func toS() -> String{
+        var reasonString = ""
+        switch(self.rawValue){
+        case 0:
+    //        reasonString = "NONE"
+            break;
+        case 1:
+            reasonString = "FINISHED"
+            break;
+        case 2:
+            reasonString = "CANCELLED"
+        case 3:
+            reasonString = "Interrupted".uppercased()
+            break;
+        case 4 :
+            reasonString = "ERROR"
+            break;
+        default:
+            break;
+            
+        }
+        return reasonString
+    }
+}
+//func getStringFromIdelReason(reason:GCKMediaPlayerIdleReason) -> String{
+//    var reasonString = ""
+//    switch(reason.rawValue){
+//    case 0:
+////        reasonString = "NONE"
+//        break;
+//    case 1:
+//        reasonString = "FINISHED"
+//        break;
+//    case 2:
+//        reasonString = "CANCELLED"
+//    case 3:
+//        reasonString = "Interrupted".uppercased()
+//        break;
+//    case 4 :
+//        reasonString = "ERROR"
+//        break;
+//    default:
+//        break;
+//
+//    }
+//    return reasonString
+//}
+
+extension GCKMediaPlayerState{
+    func toS() -> String{
+        var playerState = "";
+        switch(self.rawValue){
+        case 0 :
+            playerState = "UNKNOWN"
+            break
+        case 1 :
+            playerState = "IDLE"
+            break
+        case 2 :
+            playerState = "PLAYING"
+            break
+        case 3:
+            playerState = "PAUSED"
+            break
+        case 4:
+            playerState = "BUFFERING"
+            break
+        case 5:
+            playerState = "LOADING"
+            break
+            default:
+                break;
+            
+        };
+        return playerState
     }
 }

@@ -52,6 +52,8 @@ class ChromeCastController {
 
   /// Pauses the video playback.
   Future<void> pause() {
+    print("paused");
+    getMediaStatus();
     return _chromeCastPlatform.pause(id: id);
   }
 
@@ -115,7 +117,7 @@ class ChromeCastController {
 
   Future<MediaStatus?> getMediaStatus() async {
     final s = await _chromeCastPlatform.getMediaInfo(id: id);
-    // log(s);
+    print(s);
     if (s == "" || s == null) {
       return null;
     }

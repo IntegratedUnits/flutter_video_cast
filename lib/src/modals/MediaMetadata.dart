@@ -33,7 +33,9 @@ class MovieMediaMetaData extends MediaMetaData {
 
   factory MovieMediaMetaData.fromMap(Map<String, dynamic> map) {
     List<String> images = [];
-    images = (map["images"] as List).map((e) => e['url'].toString()).toList();
+    if(map["images"] != null){
+    images = ((map["images"] ?? []) as List).map((e) => e['url'].toString()).toList();
+    }
     return MovieMediaMetaData(
       title: map['title'],
       subtitle: map['subtitle'],

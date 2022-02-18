@@ -114,10 +114,11 @@ class _CastSampleState extends State<CastSample> {
           ],
         ),
         Slider(
-          value: _sliderValue(),
+          value: .5,
           onChanged: (double value) {
             _changeSliderValue(value);
           },
+          
         ),
         Text(_time()),
         /*
@@ -193,7 +194,7 @@ class _CastSampleState extends State<CastSample> {
   Future<void> _onSessionStarted() async {
     setState(() => _state = AppState.connected);
     String urlVideo =
-        "https://vz-6de847a3-2cb.b-cdn.net/47ff704e-34ba-4c70-b51b-1fadc378f861/playlist.m3u8?height=1080&userid=&video_version=2.8&platform=ruman&default_source=2.8";
+        "https://multiplatform-f.akamaihd.net/i/multi/will/bunny/big_buck_bunny_,640x360_400,640x360_700,640x360_1000,950x540_1500,.f4v.csmil/master.m3u8";
 
     // await _controller.loadMediaTvShow({
     //   "url": urlVideo.split("?")[0],
@@ -204,12 +205,13 @@ class _CastSampleState extends State<CastSample> {
     //   "image":
     //       "https://upload.wikimedia.org/wikipedia/commons/2/22/Big.Buck.Bunny.-.Bunny.Portrait.png"
     // });
+    print("url -----"+urlVideo);
     await _controller.load(
       MediaLoadRequestData(
-        media: MediaInfo(
-          contentId: urlVideo,
-          metaData: MovieMediaMetaData(title: "Title"),
-        ),
+        // media: MediaInfo(
+        //   contentId: urlVideo,
+        //   metaData: MovieMediaMetaData(title: "Title"),
+        // ),
         queueData: QueueData(items: [
           MediaQueueItem(
             media: MediaInfo(
@@ -234,7 +236,8 @@ class _CastSampleState extends State<CastSample> {
                   'https://upload.wikimedia.org/wikipedia/commons/2/22/Big.Buck.Bunny.-.Bunny.Portrait.png'
                 ]),
           ))
-        ], queueId: 0, startIndex: 1),
+        ],
+         queueId: 0, startIndex: 1),
       ),
     );
   }

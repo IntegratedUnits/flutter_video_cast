@@ -28,7 +28,7 @@ class MediaInfo {
   }
 
   factory MediaInfo.fromJson(Map<String, dynamic> json) {
-    late MediaMetaData mediaMetaData;
+     MediaMetaData? mediaMetaData;
     if (json['metadata'] != null) {
       switch (json['metadata']['metadataType'] as int) {
         case 1:

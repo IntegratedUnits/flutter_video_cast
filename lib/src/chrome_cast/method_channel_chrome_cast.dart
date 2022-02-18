@@ -85,6 +85,7 @@ class MethodChannelChromeCast extends ChromeCastPlatform {
   }
 
   Future<void> load(MediaLoadRequestData requestData, {required int id}) {
+    print(requestData.toJsonMap().toString() + "Loading data");
     return channel(id)!.invokeListMethod(
         "chromeCast#loadMediaWithRequestObject", requestData.toJsonMap());
   }
@@ -152,14 +153,18 @@ class MethodChannelChromeCast extends ChromeCastPlatform {
 
   @override
   Future<Duration> position({required int id}) async {
-    log("add");
-    String s =
-        (await channel(id)!.invokeMethod<String>('chromeCast#getStatus') ?? "")
-            .toString();
-    log("result :-----" + s.toString());
+    print("add");
+    // String s =
+    //     (await channel(id)!.invokeMethod<String>('chromeCast#getStatus') ?? "")
+    //         .toString();
+    // final s = await getMediaInfoIOS(id:id);
+    // print("result :-----" + jsonDecode(s).toString());
+    final val = await channel(id)!.invokeMethod<int>('chromeCast#position');
+    print("aa"+val.toString());
+    
     return Duration(
       milliseconds:
-          (await channel(id)!.invokeMethod<int>('chromeCast#position')) ?? 0,
+          val ?? 0,
     );
     // return Duration(
     //   milliseconds: 3000,
@@ -179,6 +184,13 @@ class MethodChannelChromeCast extends ChromeCastPlatform {
     return (await channel(id)!.invokeMethod<String>('chromeCast#getStatus')) ??
         "";
   }
+
+  @override
+  Future<String> getMediaInfoIOS({required int id})async{
+    return (await channel(id)!.invokeMethod<String>('chromeCast#getStatusIOS')) ??
+        "";
+  } 
+
 
   @override
   Future<void> queueNext({required int id}) {
