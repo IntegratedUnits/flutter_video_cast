@@ -115,6 +115,12 @@ class ChromeCastController: NSObject, FlutterPlatformView {
             result(nil)
         case "chromeCast#getStatus":
             result(getStatus())
+        case "chromeCast#queueNext":
+            queueNext();
+            result(nil)
+        case "chromeCast#queuePrevious":
+            queuePrevious();
+            result(nil)
         default:
             result(nil)
             break
@@ -188,21 +194,34 @@ class ChromeCastController: NSObject, FlutterPlatformView {
             let queueData = d?["queueData"] as? [String:Any];
             let queueDataBuilder = GCKMediaQueueDataBuilder.init(queueType: GCKMediaQueueType.tvSeries)
             
-            queueDataBuilder.queueID = queueData?["queueId"] as? String
+            queueDataBuilder.queueID = "13"
             if(queueData?["startIndex"] != nil){
                 queueDataBuilder.startIndex = (queueData!["startIndex"] as? NSNumber)?.uintValue ?? UInt.zero
 //                queueDataBuilder.startIndex =
             }
-            if(queueData?["items"] != nil){
-                let items = queueData!["items"]! as? Array<Dictionary<String,Any>>
+//            print("loading..........aa")
+//            print(queueData?.description)
+            if(queueData?["items"] is NSArray){
+                
+                let items = queueData!["items"] as? NSArray
+//                print("got hear")
+//                print(items?.object(at: 0))
+//                let firstItem = items?.object(at: 0) as? [String:Any]
+//                print(firstItem?["media"])
+                var loadingItems = [GCKMediaQueueItem]()
                 for val in items!{
+                    let v = val as? [String:Any]
                     let itemBuilder = GCKMediaQueueItemBuilder.init();
-                    itemBuilder.preloadTime = val["preloadTime"] as? TimeInterval ?? 10
+                    itemBuilder.preloadTime = v?["preloadTime"] as? TimeInterval ?? 10
             
                     itemBuilder.autoplay = true
-                    itemBuilder.mediaInformation = getMediaInfoFromDix(d: val["media"]! as? [String:Any])
-                    queueDataBuilder.items?.append(itemBuilder.build())
+//                    print(items?.index(of: val))
+                    itemBuilder.mediaInformation = getMediaInfoFromDix(d: v?["media"]! as? [String:Any])
+                    loadingItems.append(itemBuilder.build())
                 }
+                queueDataBuilder.items = loadingItems
+            
+//                print(queueDataBuilder.items?.description)
                
             }
             r.queueData = queueDataBuilder.build()
@@ -214,23 +233,36 @@ class ChromeCastController: NSObject, FlutterPlatformView {
     func getMediaInfoFromDix(d:[String:Any]?) -> GCKMediaInformation{
         let mediaInfo = GCKMediaInformationBuilder()
         mediaInfo.contentID = d?["contentId"] as? String
+        
 //            mediaInfo.streamType = data?[""]
 //            mediaInfo.setValuesForKeys(data!)
         let metaData = d?["metadata"] as? [String:Any]
-//        let metaData1 = GCKMediaMetadata.init(metadataType: GCKMediaMetadataType.init(rawValue: metaData?["metadataType"] as? Int ?? 0)!)
-//        if(metaData1.metadataType == GCKMediaMetadataType.movie){
-//
-//            metaData1.setString((metaData?["title"]) as? String ?? "", forKey: kGCKMetadataKeyTitle)
-//            metaData1.setString(metaData?["subtitle"] as? String ?? "", forKey: kGCKMetadataKeySubtitle)
-//            let images = (metaData?["images"] as? [Dictionary<String,Any>])
-////                metaData1.setString(images?.first?["url"] as? String ?? "", forKey: kGCKMetadataKeySubtitle)
-//            for val in images!{
-//                metaData1.addImage(GCKImage(url:URL(string:val["url"] as? String ?? "")!,width: 480,height: 360))
-//            }
-//
-////                metaData1.setString(<#T##value: String##String#>, forK)
-//        }
-//        mediaInfo.metadata = metaData1
+        let metaData1 = GCKMediaMetadata.init(metadataType: GCKMediaMetadataType.init(rawValue: metaData?["metadataType"] as? Int ?? 0)!)
+        if(metaData1.metadataType == GCKMediaMetadataType.movie){
+
+            metaData1.setString((metaData?["title"]) as? String ?? "", forKey: kGCKMetadataKeyTitle)
+            metaData1.setString(metaData?["subtitle"] as? String ?? "", forKey: kGCKMetadataKeySubtitle)
+            let images = (metaData?["images"] as? [Dictionary<String,Any>])
+//                metaData1.setString(images?.first?["url"] as? String ?? "", forKey: kGCKMetadataKeySubtitle)
+            for val in images!{
+                metaData1.addImage(GCKImage(url:URL(string:val["url"] as? String ?? "")!,width: 480,height: 360))
+            }
+
+//                metaData1.setString(<#T##value: String##String#>, forK)
+        }
+        else if(metaData1.metadataType == GCKMediaMetadataType.tvShow){
+            metaData1.setString((metaData?["seriesTitle"]) as? String ?? "", forKey: kGCKMetadataKeySeriesTitle)
+            metaData1.setString(metaData?["subtitle"] as? String ?? "", forKey: kGCKMetadataKeySubtitle)
+//            metaData1.setInteger(metaData?["season"] as? Int, forKey: kGCKMetadataKeySeasonNumber)
+            let episode = metaData!["episode"] as? NSNumber
+            metaData1.setInteger(episode?.intValue ?? 0, forKey: kGCKMetadataKeyEpisodeNumber)
+        }
+        let images = (metaData?["images"] as? [Dictionary<String,Any>])
+//                metaData1.setString(images?.first?["url"] as? String ?? "", forKey: kGCKMetadataKeySubtitle)
+        for val in images!{
+            metaData1.addImage(GCKImage(url:URL(string:val["url"] as? String ?? "")!,width: 480,height: 360))
+        }
+        mediaInfo.metadata = metaData1
         return mediaInfo.build()
         }
     func getMediaMetaDataFromDic(d:[String:Any]?) -> GCKMediaMetadata?{
@@ -284,6 +316,12 @@ class ChromeCastController: NSObject, FlutterPlatformView {
         
         
         return arg?.toDictionary()
+    }
+    private func queueNext(){
+        sessionManager.currentSession?.remoteMediaClient?.queueNextItem()
+    }
+    private func queuePrevious(){
+        sessionManager.currentSession?.remoteMediaClient?.queuePreviousItem()
     }
 
     private func loadMediaTvShow(args: Any?){
@@ -415,16 +453,26 @@ extension GCKMediaStatus{
 //                dd["assss"] = try JSONSerialization.data(withJSONObject:self.mediaInformation!.toMap(), options:.prettyPrinted).description
 //            }catch{}
         }
+        if(self.queueData != nil){
+            dd["queueData"] = self.queueData?.toMap()
+        }
+//        self.queueData?.items.map(<#T##transform: ([GCKMediaQueueItem]) throws -> U##([GCKMediaQueueItem]) throws -> U#>)
 //        var dd1 = [String:Any]()
 //        dd1["subString"] = 100
 //        dd["queueData"] = self.queueData
-       
         if(self.idleReason != GCKMediaPlayerIdleReason.none){
         dd["idleReason"] = self.idleReason.toS()
         }
 //        dd["sub"] = dd1
         
         return dd
+    }
+}
+extension GCKMediaQueueData{
+    func toMap() -> Dictionary<String,Any>{
+        var d = [String:Any]()
+        d["startIndex"] = self.startIndex
+        return d;
     }
 }
 
@@ -460,6 +508,21 @@ extension GCKMediaMetadata{
                 }
             }
             
+            break
+        case 2:
+            d["seriesTitle"] = self.string(forKey: kGCKMetadataKeySeriesTitle)
+            d["subtitle"] = self.string(forKey: kGCKMetadataKeySubtitle)
+            d["episode"] = self.integer(forKey: kGCKMetadataKeyEpisodeNumber)
+            let images = self.images()
+            var imageArray = NSArray()
+            for val in images{
+                if(val is GCKImage){
+                    let v = val as? GCKImage
+                    let add = ["url":v?.url.absoluteURL.description]
+                    imageArray = imageArray.adding(add) as NSArray
+                }
+            }
+//            d["images"] = imageArray.description
             break
         default:
             break

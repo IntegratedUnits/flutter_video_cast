@@ -83,7 +83,9 @@ class TvShowMediaMetaData extends MediaMetaData {
 
   factory TvShowMediaMetaData.fromMap(Map<String, dynamic> map) {
     List<String> images = [];
-    images = (map["images"] as List).map((e) => e['url'].toString()).toList();
+    if(map["images"] != null){
+    images = ((map["images"] ?? []) as List).map((e) => e['url'].toString()).toList();
+    }
     return TvShowMediaMetaData(
       seriesTitle: map['seriesTitle'],
       subtitle: map['subtitle'],

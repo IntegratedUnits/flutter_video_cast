@@ -16,7 +16,7 @@ import GoogleCast
 //    case 0 :
 //        playerState = "UNKNOWN"
 //        break
-//    case 1 :
+//    case 1 :
 //        playerState = "IDLE"
 //        break
 //    case 2 :

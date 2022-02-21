@@ -85,7 +85,7 @@ class MethodChannelChromeCast extends ChromeCastPlatform {
   }
 
   Future<void> load(MediaLoadRequestData requestData, {required int id}) {
-    print(requestData.toJsonMap().toString() + "Loading data");
+    print(json.encode(requestData.toJsonMap()) + "Loading data");
     return channel(id)!.invokeListMethod(
         "chromeCast#loadMediaWithRequestObject", requestData.toJsonMap());
   }
