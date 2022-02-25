@@ -23,12 +23,15 @@ PlayerStatus getPlayeStatus(String s) {
 
 enum IdelReason {
   CANCELLED,
+  FINISHED,
   NON,
 }
 IdelReason getIdelReasonFromString(String s) {
   switch (s) {
     case "CANCELLED":
       return IdelReason.CANCELLED;
+    case "FINISHED":
+      return IdelReason.FINISHED;
   }
   return IdelReason.NON;
 }
@@ -47,7 +50,8 @@ class MediaStatus {
       this.idelReason});
   factory MediaStatus.fromJson(Map<String, dynamic> json) {
     return MediaStatus(
-      mediaInfo: (json["media"] == null) ? null : MediaInfo.fromJson(json['media']),
+      mediaInfo:
+          (json["media"] == null) ? null : MediaInfo.fromJson(json['media']),
       playerState: getPlayeStatus(json['playerState']),
       possition: Duration(
         seconds: json['currentTime'].toInt(),
