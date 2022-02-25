@@ -16,6 +16,7 @@ class ChromeCastController: NSObject, FlutterPlatformView {
     private let channel: FlutterMethodChannel
     private let chromeCastButton: GCKUICastButton
     private let sessionManager = GCKCastContext.sharedInstance().sessionManager
+    private let discovryManager = GCKCastContext.sharedInstance().discoveryManager
 
     // MARK: - Init
 
@@ -27,11 +28,16 @@ class ChromeCastController: NSObject, FlutterPlatformView {
     ) {
         self.channel = FlutterMethodChannel(name: "flutter_video_cast/chromeCast_\(viewId)", binaryMessenger: registrar.messenger())
         self.chromeCastButton = GCKUICastButton(frame: frame)
+        self.chromeCastButton.tintColor = UIColor(red: 255.0/255.0, green:
+                                                    255.0/255.0, blue: 255.0/255.0, alpha: 1.0)
+        discovryManager.startDiscovery()
+//        self.chromeCastButton.backgroundColor = UIColor.init(cgColor: CGColor.init(red: 225, green: 255, blue: 200, alpha: 100))
         super.init()
         self.configure(arguments: args)
     }
 
     func view() -> UIView {
+        
         return chromeCastButton
     }
 
@@ -69,6 +75,7 @@ class ChromeCastController: NSObject, FlutterPlatformView {
     }
 
     private func onMethodCall(call: FlutterMethodCall, result: FlutterResult) {
+        
         switch call.method {
         case "chromeCast#wait":
             result(nil)
@@ -121,11 +128,14 @@ class ChromeCastController: NSObject, FlutterPlatformView {
         case "chromeCast#queuePrevious":
             queuePrevious();
             result(nil)
+        case "chromeCast#getStatusIOS":
+            result(getMediaStausIOS())
         default:
             result(nil)
             break
         }
     }
+    
 
     private func loadMedia(args: Any?) {
         guard
@@ -293,6 +303,9 @@ class ChromeCastController: NSObject, FlutterPlatformView {
 //        return getDictionaryFromMediaInfo(arg: sessionManager.currentCastSession?.remoteMediaClient?.mediaStatus)
 //    }
     private func getStatus() ->String? {
+        print("devices............")
+        print(discovryManager.deviceCount)
+        print(discovryManager.device(at: 0).deviceID)
 //        return "testData"
        
 //        sessionManager.currentCastSession?.remoteMediaClient?.mediaStatus
@@ -302,6 +315,22 @@ class ChromeCastController: NSObject, FlutterPlatformView {
         
         
         return getDictionaryFromMediaInfo(arg: sessionManager.currentCastSession?.remoteMediaClient?.mediaStatus)?.description.replacingOccurrences(of: "[", with: "{").replacingOccurrences(of: "]", with:  "}")
+    }
+    private func getMediaStausIOS() -> Dictionary<String,Any>?{
+//        var d = [String:Any]()
+//        let images = self.sessionManager.currentSession?.remoteMediaClient?.mediaStatus?.mediaInformation?.metadata?.images()
+//        if(images != nil){
+//            var imageArray = NSArray()
+//
+//                for val in images!{
+//                    let v = val as? GCKImage
+//                    imageArray = imageArray.adding(["url" : v?.url.absoluteString]) as NSArray
+//
+//            }
+//            d["images"] = imageArray
+//        }
+        return getDictionaryFromMediaInfo(arg: sessionManager.currentSession?.remoteMediaClient?.mediaStatus)
+        
     }
     private func getDictionaryFromMediaInfo(arg: GCKMediaStatus?) -> Dictionary<String,Any>?{
         if(arg == nil){

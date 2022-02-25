@@ -100,6 +100,9 @@ public class AirPlayController: NSObject, FlutterPlatformView {
             break
         }
     }
+    private func loadData() {
+//
+    }
 
     private func isConnected() -> Bool {
         return audioSession.currentRoute.outputs.contains { $0.portType == AVAudioSession.Port.airPlay }

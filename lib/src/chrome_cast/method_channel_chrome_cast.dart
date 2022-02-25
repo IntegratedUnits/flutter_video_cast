@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:ffi';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -106,7 +107,9 @@ class MethodChannelChromeCast extends ChromeCastPlatform {
   }
 
   @override
-  Future<void> pause({required int id}) {
+  Future<void> pause({required int id}) async {
+    
+    
     return channel(id)!.invokeMethod<void>('chromeCast#pause');
   }
 
@@ -181,13 +184,18 @@ class MethodChannelChromeCast extends ChromeCastPlatform {
 
   @override
   Future<String> getMediaInfo({required int id}) async {
+    if(Platform.isIOS){
+      final res = await channel(id)!.invokeMethod<Map>("chromeCast#getStatusIOS");
+      return jsonEncode(res);
+    }
     return (await channel(id)!.invokeMethod<String>('chromeCast#getStatus')) ??
         "";
   }
 
   @override
   Future<String> getMediaInfoIOS({required int id})async{
-    return (await channel(id)!.invokeMethod<String>('chromeCast#getStatusIOS')) ??
+    
+    return (await channel(id)!.invokeMethod<String>('chromeCast#getStatusIOSa')) ??
         "";
   } 
 

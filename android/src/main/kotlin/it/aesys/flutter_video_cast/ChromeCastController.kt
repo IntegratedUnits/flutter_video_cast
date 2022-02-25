@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.ContextThemeWrapper
 import android.widget.ArrayAdapter
 import androidx.mediarouter.app.MediaRouteButton
+import androidx.mediarouter.app.MediaRouteDiscoveryFragment
 import com.google.android.gms.cast.*
 import com.google.android.gms.cast.framework.CastButtonFactory
 import com.google.android.gms.cast.framework.CastContext
@@ -114,8 +115,10 @@ class ChromeCastController(
 
             request?.addStatusListener(this)
         }
+
     }
     private  fun  load(args: Any?){
+
         if(args is Map<*,*>){
 
 //                val url = (args["data"] as Map<*,*>)["contentId"] as? String
@@ -128,6 +131,9 @@ class ChromeCastController(
     
 
     private fun play() {
+
+
+
         val request = sessionManager?.currentCastSession?.remoteMediaClient?.play()
         request?.addStatusListener(this)
     }
@@ -144,6 +150,7 @@ class ChromeCastController(
     }
 
     private fun pause() {
+
         val request = sessionManager?.currentCastSession?.remoteMediaClient?.pause()
         request?.addStatusListener(this)
     }

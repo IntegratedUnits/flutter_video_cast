@@ -53,6 +53,7 @@ class _CastSampleState extends State<CastSample> {
             activeColor: Colors.amber,
             onRoutesOpening: () => print('opening'),
             onRoutesClosed: () => print('closed'),
+            
           ),
           ChromeCastButton(
             size: CastSample._iconSize,
