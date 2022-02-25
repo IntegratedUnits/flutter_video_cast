@@ -33,6 +33,7 @@ IdelReason getIdelReasonFromString(String s) {
     case "FINISHED":
       return IdelReason.FINISHED;
   }
+  //////
   return IdelReason.NON;
 }
 
